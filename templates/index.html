@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -30,6 +31,20 @@
             font-weight: bold;
             cursor: pointer;
         }
+        a.button {
+    display: block;
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: #bbb;
+    text-align: center;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
         #alert, #preview-alert {
             font-size: 0.85em;
             margin-top: 8px;
@@ -86,7 +101,9 @@
 
     <div id="audio-section" class="section" style="display:none;">
         <audio id="audio" controls></audio>
-        <button id="download" style="display:none;" onclick="this.blur();">Descargar audio</button>
+        <a id="download" class="button" style="display:none;" download>Descargar audio</a>
+
+
     </div>
 
     <script>
