@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Varus Speech</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #fff;
+            color: #222;
+            padding: 20px;
+        }
+        .section {
+            background: #f6f6f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        select, textarea {
+            width: 100%;
+            padding: 6px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            background: #bbb;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #alert, #preview-alert {
+            font-size: 0.85em;
+            margin-top: 8px;
+            color: #444;
+            font-style: italic;
+        }
+        #audio-section {
+            margin-top: 20px;
+            background: #eee;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        audio {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Varus Speech (v.1.0)</h1>
+
+    <div class="section">
+        <label>Voz en inglés:</label>
+        <select id="voice_en">
+            <option value="en-US-GuyNeural">Guy</option>
+            <option value="en-US-JennyNeural">Jenny</option>
+            <option value="en-US-AriaNeural">Aria</option>
+            <option value="en-US-AnaNeural">Ana</option>
+            <option value="en-US-EricNeural">Eric</option>
+            <option value="en-US-MichelleNeural">Michelle</option>
+            <option value="en-GB-RyanNeural">Ryan</option>
+            <option value="en-GB-SoniaNeural">Sonia</option>
+            <option value="en-GB-LibbyNeural">Libby</option>
+        </select>
+        <button onclick="testVoice('en')">Escuchar voz</button>
+        <div id="preview-alert-en"></div>
+    </div>
+
+    <div class="section">
+        <label>Voz en español:</label>
+        <select id="voice_es">
+            <option value="es-MX-DaliaNeural">Dalia (MX)</option>
+            <option value="es-US-AlonsoNeural">Alonso (US)</option>
+        </select>
+        <button onclick="testVoice('es')">Escuchar voz</button>
+        <div id="preview-alert-es"></div>
+    </div>
+
+    <div class="section">
+        <label>Texto con etiquetas [es] y [en]:</label>
+        <textarea id="text" rows="5">[es] Hola [es] [en] Hello [en]</textarea>
+        <button onclick="generateAudio()">Generar audio</button>
+        <div id="alert"></div>
+    </div>
+
+    <div id="audio-section" class="section" style="display:none;">
+        <audio id="audio" controls></audio>
+        <button id="download" style="display:none;" onclick="this.blur();">Descargar audio</button>
+    </div>
+
+    <script>
+        async function testVoice(lang) {
+            const voice = document.getElementById("voice_" + lang).value;
+            const alertBox = document.getElementById("preview-alert-" + lang);
+            alertBox.innerText = "Generando prueba de voz...";
+            const res = await fetch("/test-voice", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ voice: voice })
+            });
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.play();
+            alertBox.innerText = "Reproduciendo voz";
+        }
+
+        async function generateAudio() {
+            const alertBox = document.getElementById("alert");
+            alertBox.innerText = "Generando audio, puede tomar unos segundos...";
+            document.getElementById("audio-section").style.display = "none";
+
+            const res = await fetch("/synthesize", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: document.getElementById("text").value,
+                    voice_en: document.getElementById("voice_en").value,
+                    voice_es: document.getElementById("voice_es").value
+                })
+            });
+
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = document.getElementById("audio");
+            audio.src = url;
+            document.getElementById("download").href = url;
+            document.getElementById("download").style.display = "block";
+            document.getElementById("audio-section").style.display = "block";
+            alertBox.innerText = "✅ Ya puedes reproducir y/o descargar tu audio.";
+        }
+    </script>
+</body>
+</html>
